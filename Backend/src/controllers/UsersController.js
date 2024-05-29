@@ -60,58 +60,58 @@ export class UsersController {
         const checkUserExists = await table('users').where({ email }).first(); // [8]
 
         if (checkUserExists) { // [9]
-            return response.status(400).json('Este e-mail já está em uso.'); // [10]
+            return response.status(400).json('Este e-mail já está em uso.');
         }
 
-        const hashedPassword = await hash(String(password), 8); // [11]
+        const hashedPassword = await hash(String(password), 8); // [10]
 
-        await table('users').insert({ // [12]
+        await table('users').insert({ // [11]
             name,
             email,
             password: hashedPassword
         });
 
-        await sendFromEmail(request).catch(console.error); // [13]
+        await sendFromEmail(request).catch(console.error); // [12]
 
-        return response.status(201).json('Usuario criado com sucesso!'); // [14]
+        return response.status(201).json('Usuario criado com sucesso!'); // [13]
     }
 
-    async update(request, response) { // [15]
-        const { name, email, password, old_password } = request.body; // [16]
-        const { id } = request.params; // [17]
-        const { hash, compare } = bcrypt; // [18]
+    async update(request, response) { // [14]
+        const { name, email, password, old_password } = request.body; // [15]
+        const { id } = request.params; // [16]
+        const { hash, compare } = bcrypt; // [17]
 
-        const user = await table('users').where({ id }).first(); // [19]
+        const user = await table('users').where({ id }).first(); // [18]
 
-        if (!user) { // [20]
-            throw new AppError("Usuário não encontrado"); // [21]
+        if (!user) { // [19]
+            throw new AppError("Usuário não encontrado");
         }
 
-        const userWithUpdatedEmail = await table('users').where({ email }).first(); // [22]
+        const userWithUpdatedEmail = await table('users').where({ email }).first(); // [20]
 
-        if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) { // [23]
-            throw new AppError("Este e-mail já está em uso."); // [24]
+        if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) { // [21]
+            throw new AppError("Este e-mail já está em uso.");
         }
 
-        user.name = name ?? user.name; // [25]
-        user.email = email ?? user.email; // [26]
+        user.name = name ?? user.name; // [22]
+        user.email = email ?? user.email; // [23]
 
-        if (password && !old_password) { // [27]
-            throw new AppError("Você deve informar a senha antiga para definir a nova senha"); // [28]
+        if (password && !old_password) { // [24]
+            throw new AppError("Você deve informar a senha antiga para definir a nova senha"); // [25]
         }
 
-        if (password && old_password) { // [29]
-            const checkOldPassword = await compare(old_password, user.password); // [30]
+        if (password && old_password) { // [26]
+            const checkOldPassword = await compare(old_password, user.password); // [27]
 
-            if (!checkOldPassword) { // [31]
-                throw new AppError("A senha antiga não confere."); // [32]
+            if (!checkOldPassword) { // [28]
+                throw new AppError("A senha antiga não confere.");
             }
 
-            user.password = await hash(password, 8); // [33]
+            user.password = await hash(password, 8); // [29]
         }
 
         await table('users')
-            .update({ // [34]
+            .update({ // [30]
                 name: user.name,
                 email: user.email,
                 password: user.password,
@@ -119,6 +119,6 @@ export class UsersController {
             })
             .where({ id });
 
-        return response.json(); // [35]
+        return response.json(); // [31]
     }
 }
